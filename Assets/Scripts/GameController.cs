@@ -23,14 +23,12 @@ public class GameController : MonoBehaviour
         mainCam = Camera.main;
     }
 
-    public bool GetPointerPos(out Vector3 pos)
+    public bool GetPointerPos(out RaycastHit hit)
     {
-        pos = Vector3.zero;
-        RaycastHit hit;
+        hit = new RaycastHit();
         Ray camRay = mainCam.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(camRay, out hit))
         {
-            pos = hit.point;
             return true;
         }
         return false;

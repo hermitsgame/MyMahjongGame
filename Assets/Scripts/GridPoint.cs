@@ -4,12 +4,21 @@ using UnityEngine;
 
 public struct GridPoint
 {
-    public GridPoint(int x, int y)
+    public GridPoint(int width, int height, int layer)
     {
-        this.x = x;
-        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.layer = layer;
     }
 
-    public int x;
-    public int y;
+    public GridPoint(int width, int height)
+    {
+        this.width = width;
+        this.height = height;
+        layer = 0;
+    }
+
+    public int width;
+    public int height;
+    public int layer;
 }
