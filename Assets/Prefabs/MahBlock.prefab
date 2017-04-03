@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 33677521072402890}
   - component: {fileID: 23125359562729090}
   - component: {fileID: 65223586261606238}
+  - component: {fileID: 114068607356939256}
   m_Layer: 0
   m_Name: MahBlock
   m_TagString: Block
@@ -92,3 +93,14 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.020000007, y: 0.02839304, z: 0.01329532}
   m_Center: {x: -4.656613e-10, y: -9.313224e-10, z: 0}
+--- !u!114 &114068607356939256
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1514358475009844}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bd354147ecfb8341a6afbfeab269297, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

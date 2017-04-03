@@ -4,18 +4,37 @@ using UnityEngine;
 
 public class Block
 {
-    public Block(GridPoint gridPoint, int layer)
+    public Block(GridPoint point, int type, List<Block> isSupportedBy, BlockGameObject blockGameObject)
     {
-        this.gridPoint = gridPoint;
-        this.layer = layer;
+        _point = point;
+        _isSupportedBy = isSupportedBy;
+        _type = type;
     }
 
-    public GridPoint gridPoint;
-    public int layer;
-    public int id;
-    public List<Block> supports = new List<Block>();
-    public List<Block> supportedBy = new List<Block>();
-    public List<Block> blocks = new List<Block>();
-    public List<Block> blockedBy = new List<Block>();
-    public GameObject blockGameObject;
+    private int _type;
+    private GridPoint _point;
+    private int _thisSupportsCount;
+    private List<Block> _isSupportedBy = new List<Block>();
+    private BlockGameObject _gameObject;
+
+    public int type
+    {
+        get { return _type; }
+    }
+
+    public BlockGameObject gameObject
+    {
+        get { return _gameObject; }
+    }
+
+    public int thisSupportsCount
+    {
+        get { return _thisSupportsCount; }
+        set { _thisSupportsCount = value; }
+    }
+
+    public bool IsFree()
+    {
+        return thisSupportsCount == 0;
+    }
 }
