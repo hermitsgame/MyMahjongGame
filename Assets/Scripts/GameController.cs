@@ -6,6 +6,10 @@ public class GameController : MonoBehaviour
 {
     public static GameController instance;
 
+    public enum Mode { Disabled, Play, Build }
+
+    public Mode mode = Mode.Build;
+
     private Camera mainCam;
 
     void Awake()

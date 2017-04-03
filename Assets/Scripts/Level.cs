@@ -4,20 +4,16 @@ using UnityEngine;
 
 public class Level : MonoBehaviour
 {
-    public enum Mode { Disabled, Play, Build }
-
     public int gridWidth;
     public int gridHeight;
     public int gridLayers;
     public Vector3 gridUnitSize = Vector3.one;   
     public Vector3 blockPlacementOffset;
-    public Mode mode = Mode.Disabled;
     public GameObject blockMarkerPrefab;
     public GameObject[] blockTypes;
 
     new private Transform transform;
     private BlockMarker blockMarker;
-    //private GridPoint markerGridPoint;
     private Block[][,] grid; // maybe make an int obj index table to mark space and separate object table
     private Vector2 gridFarpoint;
     private GridPoint lastPoint = new GridPoint(invalidPoint.width, invalidPoint.height);
@@ -50,13 +46,13 @@ public class Level : MonoBehaviour
 
     void Update()
     {
-        switch (mode)
+        switch (GameController.instance.mode)
         {
-            case Mode.Build:
+            case GameController.Mode.Build:
                 Build();
                 break;
 
-            case Mode.Play:
+            case GameController.Mode.Play:
                 Play();
                 break;
 
@@ -67,14 +63,19 @@ public class Level : MonoBehaviour
 
     void Play()
     {
-        
+        if (blockMarker)
+        {
+            Destroy(blockMarker);
+            blockMarker = null;
+        }
     }
 
     void Build()
     {
         if (!blockMarker)
         {
-            blockMarker = Instantiate(blockMarkerPrefab).GetComponent<BlockMarker>();
+            blockMarker = Instantiate(blockMarkerPrefab, transform).GetComponent<BlockMarker>();
+            blockMarker.name = blockMarkerPrefab.name;
         }
 
         RaycastHit hit;
@@ -87,8 +88,10 @@ public class Level : MonoBehaviour
                     Mathf.RoundToInt(Mathf.Lerp(0, gridWidth - 1, Mathf.InverseLerp(-gridFarpoint.x, gridFarpoint.x, hit.point.x))), 
                     Mathf.RoundToInt(Mathf.Lerp(0, gridHeight - 1, Mathf.InverseLerp(-gridFarpoint.y, gridFarpoint.y, hit.point.z))));
 
-                List<Block> supports = new List<Block>();
-                if (CheckSpace(ref point, out supports))
+                List<Block> bottomBlocks = new List<Block>();
+                List<Block> leftBlocks = new List<Block>();
+                List<Block> rightBlocks = new List<Block>();
+                if (CheckSpace(ref point, out bottomBlocks, out leftBlocks, out rightBlocks))
                 {
                     Vector3 newPos = RoundToGrid(hit.point);
                     blockMarker.transform.position = new Vector3(
@@ -104,7 +107,7 @@ public class Level : MonoBehaviour
 
                     if (Input.GetMouseButtonDown(0))
                     {
-                        CreateBlock(point, supports);
+                        CreateBlock(point, bottomBlocks, leftBlocks, rightBlocks);
                     }
                 }
                 else
@@ -120,7 +123,7 @@ public class Level : MonoBehaviour
         }
     }
 
-    bool CheckSpace(ref GridPoint point, out List<Block> supports)
+    bool CheckSpace(ref GridPoint point, out List<Block> bottomBlocks, out List<Block> leftBlocks, out List<Block> rightBlocks)
     {
         bool freeSpace = true;
         bool xNegEdge = point.width > 0;
@@ -128,7 +131,9 @@ public class Level : MonoBehaviour
         bool yNegEdge = point.height > 0;
         bool yPosEdge = point.height < gridHeight - 1;
 
-        supports = new List<Block>();
+        bottomBlocks = new List<Block>();
+        leftBlocks = new List<Block>();
+        rightBlocks = new List<Block>();
 
         // Loop checking block occupation
         while (point.layer < gridLayers)
@@ -155,8 +160,13 @@ public class Level : MonoBehaviour
                         {
                             if (grid[point.layer][point.width + 1, point.height] != null)
                             {
+                                bottomBlocks.AddRange(new Block[] { grid[point.layer][point.width - 1, point.height], grid[point.layer][point.width + 1, point.height] });
                                 point.layer++;
-                                supports.AddRange(new Block[] { grid[point.layer][point.width - 1, point.height], grid[point.layer][point.width + 1, point.height] });
+                                for (int i = 0; i < bottomBlocks.Count; i++)
+                                {
+                                    if (bottomBlocks[i] == null)
+                                        print(bottomBlocks.Count);
+                                }
                                 continue;
                             }
                         }
@@ -165,8 +175,8 @@ public class Level : MonoBehaviour
                         {
                             if (grid[point.layer][point.width + 1, point.height - 1] != null && grid[point.layer][point.width + 1, point.height + 1] != null)
                             {
+                                bottomBlocks.AddRange(new Block[] { grid[point.layer][point.width - 1, point.height], grid[point.layer][point.width + 1, point.height - 1], grid[point.layer][point.width + 1, point.height + 1] });
                                 point.layer++;
-                                supports.AddRange(new Block[] { grid[point.layer][point.width - 1, point.height], grid[point.layer][point.width + 1, point.height - 1], grid[point.layer][point.width + 1, point.height + 1] });
                                 continue;
                             }
                         }
@@ -184,8 +194,8 @@ public class Level : MonoBehaviour
                         {
                             if (grid[point.layer][point.width - 1, point.height - 1] != null && grid[point.layer][point.width - 1, point.height + 1] != null)
                             {
+                                bottomBlocks.AddRange(new Block[] { grid[point.layer][point.width + 1, point.height], grid[point.layer][point.width - 1, point.height - 1], grid[point.layer][point.width - 1, point.height + 1] });
                                 point.layer++;
-                                supports.AddRange(new Block[] { grid[point.layer][point.width + 1, point.height], grid[point.layer][point.width - 1, point.height - 1], grid[point.layer][point.width - 1, point.height + 1] });
                                 continue;
                             }
                         }
@@ -203,8 +213,8 @@ public class Level : MonoBehaviour
                         {
                             if (grid[point.layer][point.width, point.height + 1] != null)
                             {
+                                bottomBlocks.AddRange(new Block[] { grid[point.layer][point.width, point.height - 1], grid[point.layer][point.width, point.height + 1] });
                                 point.layer++;
-                                supports.AddRange(new Block[] { grid[point.layer][point.width, point.height - 1], grid[point.layer][point.width, point.height + 1] });
                                 continue;
                             }
                         }
@@ -213,8 +223,8 @@ public class Level : MonoBehaviour
                         {
                             if (grid[point.layer][point.width + 1, point.height + 1] != null && grid[point.layer][point.width - 1, point.height + 1] != null)
                             {
+                                bottomBlocks.AddRange(new Block[] { grid[point.layer][point.width, point.height - 1], grid[point.layer][point.width + 1, point.height + 1], grid[point.layer][point.width - 1, point.height + 1] });
                                 point.layer++;
-                                supports.AddRange(new Block[] { grid[point.layer][point.width, point.height - 1], grid[point.layer][point.width + 1, point.height + 1], grid[point.layer][point.width - 1, point.height + 1] });
                                 continue;
                             }
                         }
@@ -232,8 +242,8 @@ public class Level : MonoBehaviour
                         {
                             if (grid[point.layer][point.width + 1, point.height - 1] != null && grid[point.layer][point.width - 1, point.height - 1] != null)
                             {
+                                bottomBlocks.AddRange(new Block[] { grid[point.layer][point.width, point.height + 1], grid[point.layer][point.width + 1, point.height - 1], grid[point.layer][point.width - 1, point.height - 1] });
                                 point.layer++;
-                                supports.AddRange(new Block[] { grid[point.layer][point.width, point.height + 1], grid[point.layer][point.width + 1, point.height - 1], grid[point.layer][point.width - 1, point.height - 1] });
                                 continue;
                             }
                         }
@@ -251,8 +261,8 @@ public class Level : MonoBehaviour
                         {
                             if (grid[point.layer][point.width + 1, point.height + 1] != null && grid[point.layer][point.width - 1, point.height + 1] != null && grid[point.layer][point.width + 1, point.height - 1] != null)
                             {
+                                bottomBlocks.AddRange(new Block[] { grid[point.layer][point.width - 1, point.height - 1], grid[point.layer][point.width + 1, point.height + 1], grid[point.layer][point.width - 1, point.height + 1], grid[point.layer][point.width + 1, point.height - 1] });
                                 point.layer++;
-                                supports.AddRange(new Block[] { grid[point.layer][point.width - 1, point.height - 1], grid[point.layer][point.width + 1, point.height + 1], grid[point.layer][point.width - 1, point.height + 1], grid[point.layer][point.width + 1, point.height - 1] });
                                 continue;
                             }
                         }
@@ -282,6 +292,28 @@ public class Level : MonoBehaviour
                         freeSpace = false;
                     }
                 }
+                // Blocks on spots (point.width - 2, point.height +- 1) -> blocks possible selection from left
+                if (yNegEdge && yPosEdge && point.width > 1)
+                {
+                    for (int i = -1; i < 2; i++)
+                    {
+                        if (grid[point.layer][point.width - 2, point.height + i] != null)
+                        {
+                            leftBlocks.Add(grid[point.layer][point.width - 2, point.height + i]);
+                        }
+                    }
+                }
+                // Blocks on spots (point.width + 2, point.height +- 1) -> blocks possible selection from right
+                if (yNegEdge && yPosEdge && point.width < gridWidth - 2)
+                {
+                    for (int i = -1; i < 2; i++)
+                    {
+                        if (grid[point.layer][point.width + 2, point.height + i] != null)
+                        {
+                            rightBlocks.Add(grid[point.layer][point.width + 2, point.height + i]);
+                        }
+                    }
+                }
             }
             break;
         }
@@ -298,15 +330,25 @@ public class Level : MonoBehaviour
         return new Vector3(RoundToGrid(value.x, gridUnitSize.x), RoundToGrid(value.y, gridUnitSize.y), RoundToGrid(value.z, gridUnitSize.z));
     }
 
-    public void CreateBlock(GridPoint point, List<Block> supports)
+    public void CreateBlock(GridPoint point, List<Block> bottomBlocks, List<Block> leftBlocks, List<Block> rightBlocks)
     {
         if (blockMarker)
         {
             int type = Random.Range(0, blockTypes.Length - 1);
             GameObject go = Instantiate(blockTypes[type], blockMarker.transform.position, blockMarker.transform.rotation, transform);
+            go.name = /*blockTypes[type].name +*/ "[" + type +"]";
             BlockGameObject blockGameObject = go.GetComponent<BlockGameObject>();
-            blockGameObject.Init(point);
-            grid[point.layer][point.width, point.height] = new Block(point, type, supports, blockGameObject);
+            blockGameObject.Init(this, point, type);
+            Block block = new Block(point, type, bottomBlocks, leftBlocks, rightBlocks, blockGameObject);
+            for (int i = 0; i < leftBlocks.Count; i++)
+            {
+                leftBlocks[i].rightBlocks.Add(block);
+            }
+            for (int i = 0; i < rightBlocks.Count; i++)
+            {
+                rightBlocks[i].leftBlocks.Add(block);
+            }
+            grid[point.layer][point.width, point.height] = block;
             print("Block created at [" + point.width + "," + point.height + "] on layer [" + point.layer + "]");
         }
         else
@@ -315,12 +357,22 @@ public class Level : MonoBehaviour
         }
     }
 
-    public void RemoveBlock(GridPoint point)
+    public bool RemoveBlock(GridPoint point)
     {
-        if (grid[point.layer][point.width, point.height].IsFree())
+        if (IsBlockFree(point))
         {
-            grid[point.layer][point.width, point.height].gameObject.Remove();
+            grid[point.layer][point.width, point.height].Remove();
             grid[point.layer][point.width, point.height] = null;
+            return true;
         }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool IsBlockFree(GridPoint point)
+    {
+        return grid[point.layer][point.width, point.height].IsFree();
     }
 }
