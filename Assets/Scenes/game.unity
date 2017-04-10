@@ -181,14 +181,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41ee2d76bf2faf348b5828bd60c14447, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridWidth: 36
-  gridHeight: 18
-  gridLayers: 10
+  levelData:
+    gridWidth: 36
+    gridHeight: 18
+    gridLayers: 10
   gridUnitSize: {x: 0.96, y: 1.3, z: 1.32}
   blockPlacementOffset: {x: 0, y: 0.61, z: 0}
   blockMarkerPrefab: {fileID: 1045807698017682, guid: adc0ea26323182a4dba59213d8635459,
     type: 2}
-  blockTypes:
+  blockTypelessPrefab: {fileID: 1514358475009844, guid: 020228b8a385dd647b1df94dafdadd6b,
+    type: 2}
+  blockTypePrefabs:
   - {fileID: 1514358475009844, guid: 020228b8a385dd647b1df94dafdadd6b, type: 2}
 --- !u!4 &224504981
 Transform:

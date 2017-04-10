@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
+﻿[System.Serializable]
 public struct GridPoint
 {
     public GridPoint(int width, int height, int layer)

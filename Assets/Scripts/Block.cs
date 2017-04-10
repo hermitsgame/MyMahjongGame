@@ -1,53 +1,45 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
+[System.Serializable]
 public class Block
 {
-    public Block(GridPoint point, int type, List<Block> bottomBlocks, List<Block> leftBlocks, List<Block> rightBlocks, BlockGameObject blockGameObject)
+    // Serialization needs this
+    public Block()
+    {
+
+    }
+
+    public Block(GridPoint point, List<Block> bottomBlocks, List<Block> leftBlocks, List<Block> rightBlocks, BlockGameObject blockGameObject)
     {
         _point = point;
         this.bottomBlocks = bottomBlocks;
         this.leftBlocks = leftBlocks;
         this.rightBlocks = rightBlocks;
-        _type = type;
 
         for (int i = 0; i < bottomBlocks.Count; i++)
-        {
-            bottomBlocks[i]._thisSupportsCount++;
+        {         
+            bottomBlocks[i].topBlocks.Add(this);
         }
     }
 
     public List<Block> rightBlocks = new List<Block>();
     public List<Block> leftBlocks = new List<Block>();
     public List<Block> bottomBlocks = new List<Block>();
+    public List<Block> topBlocks = new List<Block>();
 
-    private int _type;
     private GridPoint _point;
-    private int _thisSupportsCount;
-    private BlockGameObject _gameObject;
+    //private BlockGameObject _gameObject;
 
-    public int type
-    {
-        get { return _type; }
-    }
-
-    public BlockGameObject gameObject
+    /*public BlockGameObject gameObject
     {
         get { return _gameObject; }
-    }
-
-    /*public int thisSupportsCount
-    {
-        get { return _thisSupportsCount; }
-        set { _thisSupportsCount = value; }
     }*/
 
     public bool IsFree()
     {
-        if ((leftBlocks.Count == 0 || rightBlocks.Count == 0) && _thisSupportsCount == 0)
+        if ((leftBlocks.Count == 0 || rightBlocks.Count == 0) && topBlocks.Count == 0)
         {
-            Debug.Log(leftBlocks.Count + "   " + rightBlocks.Count + "   " + _thisSupportsCount);
+            //Debug.Log("Left: " + leftBlocks.Count + "  Right: " + rightBlocks.Count + "  Top: " + topBlocks.Count);
             return true;
         } 
         else
@@ -80,7 +72,13 @@ public class Block
         }
         for (int i = 0; i < bottomBlocks.Count; i++)
         {
-            bottomBlocks[i]._thisSupportsCount--;
+            for (int p = 0; p < bottomBlocks[i].topBlocks.Count; p++)
+            {
+                if (Equals(bottomBlocks[i].topBlocks[p]))
+                {
+                    bottomBlocks[i].topBlocks.RemoveAt(p);
+                }
+            }
         }
     }
 }

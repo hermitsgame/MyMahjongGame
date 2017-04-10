@@ -40,7 +40,7 @@ public class BlockGameObject : MonoBehaviour
         startCol = mat.color;
     }
 
-    public void Init(Level level, GridPoint point, int type)
+    public void Init(Level level, GridPoint point)
     {
         _point = point;
         _type = type;
